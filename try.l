@@ -1,4 +1,9 @@
 BOOLEAN true|false
+BOOL boolean
+INT int
+STR string
+CH char
+DBL double
 BEGIN begin
 END end
 DIGIT [0-9]
@@ -20,6 +25,7 @@ THEN then
 ELSE else 
 DO do
 WHILE while
+ENDW endwhile
 INPUT input
 OUTPUT output
 FUNCDEC funcdec
@@ -50,73 +56,83 @@ ADD add
 DELETE delete
 CLEAR clear
 SHOW show
-EMPTY isempty
+ISEMPTY isempty
+EMPTY
+SET_INIT \{ \}
 SPACE [ ]
-NUMBER ({DIGIT})+
-FLOATING_POINT {DIGIT}*(\.{DIGIT}+)
+INTEGER ({DIGIT})+
+DOUBLE {DIGIT}*(\.{DIGIT}+)
 IDENTIFIER {LETTER}({LETTER}|{DIGIT})*
-NAME {IDENTIFIER}|({NUMBER}{IDENTIFIER})
+STRING \"([^\\\"]|\\\"|\\\n|\\\\)*\"
 COMMENT {HASHTAG}([^\n])*\n
 
 
 %%
-{ADD} {printf("ADD ");};
-{DELETE} {printf("DELETE ");};
-{CLEAR} {printf("CLEAR ");};
-{SHOW} {printf("SHOW_CONTENT ");};
-{UNION} {printf("UNION ");};
-{EMPTY} {printf("IS_EMPTY ");};
-{INTERSECT} {printf("INTERSECT ");};
-{FUNCDEC} {printf("FUNCDEC ");};
-{STARTF} {printf("STARTF ");};
-{INPUT} {printf("INPUT ");};
-{OUTPUT} {printf("OUTPUT ");};
-{END} {printf("END ");}
-{ENDF} {printf("ENDF ");};
-{DIFF_OP} {printf("DIFF_OP ");};
-{LETTER} {printf("IDENTIFIER ");};
-{BEGIN} {printf("BEGIN ");}
-{BOOLEAN} {printf("BOOLEAN ");}
-{PLUS_OP} {printf("PLUS_OP ");}
-{MINUS_OP} {printf("MINUS_OP ");}
-{MUL_OP} {printf("MUL_OP ");}
-{DIV_OP} {printf("DIV_OP ");}
-{REMAINDER_OP} {printf("REMAINDER_OP ");}
-{ASSIGNMENT} {printf("ASSIGNMENT ");}
-{NEW_LINE} {printf("NEW_LINE ");}
-{EQUALITY_OP} {printf("EQUALITY_OP ");}
-{HASHTAG} {printf("HASHTAG ");}
-{IF} {printf("IF ");}
-{THEN} {printf("THEN ");}
-{ELSE} {printf("ELSE ");}
-{DO} {printf("DO ");}
-{WHILE} {printf("WHILE ");}
-{RETURN} {printf("RETURN ");}
-{OR_OP} {printf("OR_OP ");}
-{AND_OP} {printf("AND_OP ");}
-{XOR_OP} {printf("XOR_OP ");}
-{LT_OP} {printf("LT_OP ");}
-{GT_OP} {printf("GT_OP ");}
-{LTE_OP} {printf("LTE_OP ");}
-{GTE_OP} {printf("GTE_OP ");}
-{NOT_OP} {printf("NOT_OP ");}
-{SUBSET_OP} {printf("SUBSET_OP ");}
-{SUPSET_OP} {printf("SUPSET_OP ");}
-{SEMICOLON} {printf("SEMICOLON ");}
-{DOLLAR_SIGN} {printf("DOLLAR_SIGN ");}
-{LCB} {printf("LCB ");}
-{RCB} {printf("RCB ");}
-{LSB} {printf("LSB ");}
-{RSB} {printf("RSB ");}
-{LP} {printf("LP ");}
-{RP} {printf("RP ");}
-{COMMA} {printf("COMMA ");}
-"$"{IDENTIFIER} {printf("SET ");}
-{NUMBER} {printf("NUMBER ");}
-{FLOATING_POINT} {printf("FLOATING_POINT ");}
-{IDENTIFIER} {printf("IDENTIFIER ");}
-{NAME} {printf("NAME ");}
-{COMMENT} {printf("COMMENT ");}
+{ADD} return ADD;
+{DELETE} return DELETE;
+{CLEAR} return CLEAR;
+{SHOW} return SHOW;
+{UNION} return UNION;
+{ISEMPTY} return ISEMPTY;
+{EMPTY} return EMPTY;
+{INTERSECT} return INTERSECT;
+{FUNCDEC} return FUNCDEC;
+{STARTF} return STARTF;
+{INPUT} return INPUT;
+{OUTPUT} return OUTPUT;
+{END} return END;
+{ENDF} return ENDF;
+{DIFF_OP} return DIFF_OP;
+{LETTER} return LETTER;
+{BEGIN} return BEGIN;
+{INTEGER} return INTEGER;
+{STRING} return STRING;
+{CHAR} return CHAR;
+{INT} return INT;
+{STR} return STR;
+{CH} return CH;
+{BOOL} return BOOL;
+{PLUS_OP} return PLUS_OP;
+{MINUS_OP} return MINUS_OP;
+{MUL_OP} return MUL_OP;
+{DIV_OP} return DIV_OP;
+{REMAINDER_OP} return REMAINDER_OP;
+{ASSIGNMENT} return ASSIGNMENT;
+{NEW_LINE} return NEW_LINE;
+{EQUALITY_OP} return EQUALITY_OP;
+{HASHTAG} return HASHTAG;
+{IF} return IF;
+{THEN} return THEN;
+{ELSE} return ELSE;
+{DO} return DO;
+{WHILE} return WHILE;
+{ENDW} return ENDW;
+{RETURN} return RETURN;
+{OR_OP} return OR_OP;
+{AND_OP} return AND_OP;
+{XOR_OP} return XOR_OP;
+{LT_OP} return LT_OP;
+{GT_OP} return GT_OP;
+{LTE_OP} return LTE_OP;
+{GTE_OP} return GTE_OP;
+{NOT_OP} return NOT_OP;
+{SUBSET_OP} return SUBSET_OP;
+{SUPSET_OP} return SUPSET_OP;
+{SEMICOLON} return SEMICOLON;
+{DOLLAR_SIGN} return DOLLAR_SIGN;
+{LCB} return LCB;
+{RCB} return RCB;
+{LSB} return LSB;
+{RSB} return RSB;
+{LP} return LP;
+{RP} return RP;
+{COMMA} return COMMA;
+"$"{IDENTIFIER} return SET;
+{NUMBER} return NUMBER;
+{DOUBLE} return DOUBLE;
+{IDENTIFIER} return IDENTIFIER;
+{NAME} return NAME;
+{COMMENT} return COMMENT;
 
 
 . {printf("%s", yytext);}
