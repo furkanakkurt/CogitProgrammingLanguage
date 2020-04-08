@@ -1,20 +1,22 @@
+%option yylineno
+
 BOOLEAN true|false
 BOOL boolean
 INT int
 STR string
 CH char
 DBL double
-BEGIN begin
+BEGINN begin
 END end
 DIGIT [0-9]
-LETTER [A-Za-z]
 UNION [Uu]
 INTERSECT [Nn]
+CART_OP [Cc]
 PLUS_OP \+
 MINUS_OP \-
 MUL_OP \*
 DIV_OP \/
-ASSIGNMENT \=
+ASSIGNMENT_OP \=
 REMAINDER_OP \%
 DIFF_OP \\
 NEW_LINE \n
@@ -56,16 +58,16 @@ ADD add
 DELETE delete
 CLEAR clear
 SHOW show
-ISEMPTY isempty
-EMPTY
-SET_INIT \{ \}
+IS_EMPTY isempty 
 SPACE [ ]
+EMPTY (\"\")?(\(\))?(\{\})? 
+CHAR \'[A-Za-z]\'
+LETTER [A-Za-z]
 INTEGER ({DIGIT})+
 DOUBLE {DIGIT}*(\.{DIGIT}+)
 IDENTIFIER {LETTER}({LETTER}|{DIGIT})*
 STRING \"([^\\\"]|\\\"|\\\n|\\\\)*\"
-COMMENT {HASHTAG}([^\n])*\n
-
+COMMENT {HASHTAG}([^\n])*\n 
 
 %%
 {ADD} return ADD;
@@ -73,8 +75,8 @@ COMMENT {HASHTAG}([^\n])*\n
 {CLEAR} return CLEAR;
 {SHOW} return SHOW;
 {UNION} return UNION;
-{ISEMPTY} return ISEMPTY;
-{EMPTY} return EMPTY;
+{CART_OP} return CART_OP;
+{IS_EMPTY} return IS_EMPTY;
 {INTERSECT} return INTERSECT;
 {FUNCDEC} return FUNCDEC;
 {STARTF} return STARTF;
@@ -82,12 +84,12 @@ COMMENT {HASHTAG}([^\n])*\n
 {OUTPUT} return OUTPUT;
 {END} return END;
 {ENDF} return ENDF;
+{LETTER} return IDENTIFIER;
+{CHAR} return CHAR;
 {DIFF_OP} return DIFF_OP;
-{LETTER} return LETTER;
-{BEGIN} return BEGIN;
+{BEGINN} return BEGINN;
 {INTEGER} return INTEGER;
 {STRING} return STRING;
-{CHAR} return CHAR;
 {INT} return INT;
 {STR} return STR;
 {CH} return CH;
@@ -97,7 +99,7 @@ COMMENT {HASHTAG}([^\n])*\n
 {MUL_OP} return MUL_OP;
 {DIV_OP} return DIV_OP;
 {REMAINDER_OP} return REMAINDER_OP;
-{ASSIGNMENT} return ASSIGNMENT;
+{ASSIGNMENT_OP} return ASSIGNMENT_OP;
 {NEW_LINE} return NEW_LINE;
 {EQUALITY_OP} return EQUALITY_OP;
 {HASHTAG} return HASHTAG;
@@ -126,24 +128,17 @@ COMMENT {HASHTAG}([^\n])*\n
 {RSB} return RSB;
 {LP} return LP;
 {RP} return RP;
+{EMPTY} return EMPTY;
 {COMMA} return COMMA;
 "$"{IDENTIFIER} return SET;
-{NUMBER} return NUMBER;
 {DOUBLE} return DOUBLE;
 {IDENTIFIER} return IDENTIFIER;
-{NAME} return NAME;
 {COMMENT} return COMMENT;
-
-
 . {printf("%s", yytext);}
 
 %%
 int yywrap(void) {
 	return 1;
-}
-int main(void){
-	yylex();
-	return 0;
 }
 
 

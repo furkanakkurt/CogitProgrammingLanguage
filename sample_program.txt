@@ -1,0 +1,29 @@
+begin
+$a = {1,2,'a'};
+$c = $a xx $de;
+while (a<5) then
+anne = 31;
+c = 3.2;
+endwhile;
+c = 3-2;
+$a = $b u $c;
+
+#this is the foo function
+funcdec foo($a, b, $c)
+startf
+$a = {30,2,23.4};
+return 1;
+endf;
+
+foo($a, b, $c);
+
+if (c==3) then
+a = c + 2;
+endif;
+
+flag = a subset $set;
+input a;
+output 3;
+output c;
+
+end

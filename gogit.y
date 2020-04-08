@@ -1,7 +1,6 @@
 %{
 #include <stdio.h>
 #include <stdlib.h>
-void yyerror(char* s);
 %}
 %token BOOLEAN
 %token BOOL
@@ -12,7 +11,8 @@ void yyerror(char* s);
 %token STRING
 %token DOUBLE
 %token CHAR
-%token BEGIN
+%token INTEGER
+%token BEGINN
 %token END
 %token DIGIT
 %token LETTER 
@@ -22,7 +22,7 @@ void yyerror(char* s);
 %token MINUS_OP
 %token MUL_OP
 %token DIV_OP
-%token ASSIGNMENT
+%token ASSIGNMENT_OP
 %token REMAINDER_OP
 %token HASHTAG
 %token IF
@@ -66,214 +66,195 @@ void yyerror(char* s);
 %token IDENTIFIER
 %token NAME
 %token COMMENT
-%token ENDWHILE
+%token ENDW
 %token SET
 %token IS_EMPTY
-%token SET_INIT
 %token CONTAINS
+%token EQUALITY_OP
+%token DIFF_OP
+%token CART_OP
+%token NEW_LINE
 
 %start program
-%right ASSIGNMENTOP
+%right ASSIGNMENT_OP
 
 %%
 
 //Program
 program : 
-	BEGIN stmts END
+	BEGINN stmts END {printf("Input program is valid\n"); return 0;} | BEGINN empty END {printf("Input program is valid\n"); return 0;};
 stmts : 
 	stmt
-	| stmts
+	|stmt stmts ; 
 stmt :
 	if_stmt end_stmt 
-	| nonif_stmt end_stmt
+	| nonif_stmt end_stmt;
 nonif_stmt :
 	loop
+	| function_dec
 	| function_call
 	| assignment
 	| set_functions
 	| input_stmt
 	| output_stmt
-	| var_dec
+	| var_dec;
 var_dec :
 	int_dec
 	| double_dec
 	| string_dec
 	| boolean_dec
 	| char_dec
-	| set
+	| SET;
 int_dec :
-	INT IDENTIFIER
+	INT IDENTIFIER;
 double_dec : 
-	DBL IDENTIFIER
+	DBL IDENTIFIER;
 string_dec : 
-	STR IDENTIFIER
+	STR IDENTIFIER;
 boolean_dec :
-	BOOL IDENTIFIER
+	BOOL IDENTIFIER;
 char_dec :
-	CH IDENTIFIER
+	CH IDENTIFIER;
 input_stmt :
-	INPUT variable		
+	INPUT variable;		
 output_stmt :
-	OUTPUT sentence
-	|OUTPUT expression
+	OUTPUT IDENTIFIER
+	|OUTPUT variable;
 loop : 
 	while_stmt
-	|dowhile_stmt
+	|dowhile_stmt;
 while_stmt :
-	WHILE LP logical_exp RP THEN stmts ENDWHILE
+	WHILE LP logical_exp RP THEN stmts ENDW;
 dowhile_stmt :
-	DO LP stmts RP WHILE logical_exp
+	DO LP stmts RP WHILE logical_exp;
 end_stmt :
-	SEMICOLON
+	SEMICOLON;
 assignment :
-	SET assignment_op set_exp
-	|IDENTIFIER assignment_op arithmetic_exp
-	|IDENTIFIER assignment_op numeral
-	|IDENTIFIER assignment_op logical_exp
-	|IDENTIFIER assignment_op IDENTIFIER
-	|IDENTIFIER assignment_op input_stmt
-	|assignment arithmetic_op numeral
+	SET ASSIGNMENT_OP set_expression
+	|IDENTIFIER ASSIGNMENT_OP LP arithmetic_exp RP
+	|IDENTIFIER ASSIGNMENT_OP logical_exp
+	|IDENTIFIER ASSIGNMENT_OP input_stmt
+	|assignment arithmetic_op numeral;
 if_stmt :
 	matched_if 
-	|unmatched_if
+	|unmatched_if;
 matched_if :
-	IF LP logical_exp RP THEN matched_if ELSE matched_if 
-	| nonif_stmt
+	IF LP logical_exp RP THEN matched_if ELSE matched_if; 
 unmatched_if :
 	IF LP logical_exp RP THEN if_stmt 
 	|IF LP logical_exp RP THEN matched_if ELSE unmatched_if
-expression :
-	logical_exp 
-	|arithmetic_exp
-	|set_exp
-	|variable
-	|IDENTIFIER
+	|IF LP logical_exp RP THEN nonif_stmt ELSE unmatched_if;
 arithmetic_exp :
-	numeral arithmetic_op numeral
-	|numeral arithmetic_op IDENTIFIER
-	|IDENTIFIER arithmetic_op IDENTIFIER
-	|arithmetic_exp arithmetic_op NUMERAL 
+	arithmetic_exp arithmetic_op numeral 
 	|arithmetic_exp arithmetic_op IDENTIFIER
+	|IDENTIFIER
+	|variable;
 logical_exp :
-	expression logic_op expression
-	| SET logic_op SET
+	IDENTIFIER logic_op IDENTIFIER
+	IDENTIFIER set_op SET
+	variable set_op SET	
+	SET set_op SET;
 function_dec :	
-    FUNCDEC func_name LP function_parameters RP STARTF stmts RETURN stmt ENDF
+    FUNCDEC func_name LP function_parameters RP STARTF stmts RETURN stmt ENDF;
 function_call :
-	func_name LP function_parameters RP
+	func_name LP function_parameters RP;
 function_parameters :
 	function_parameter 
-	| function_parameters COMMA funtion_parameter
+	| function_parameters COMMA function_parameter;
 function_parameter :
 	SET
 	|numeral
 	|STRING
-	|EMPTY
+	|EMPTY;
 func_name :
-	IDENTIFIER
+	IDENTIFIER;
 variable :
-	SET
-	|STRING
-	|INTIGER
+	STRING
 	|BOOLEAN
-	|DOUBLE
-	|CHAR
+	|numeral
+	|CHAR;
 arithmetic_op :
 	PLUS_OP
 	|MINUS_OP
 	|DIV_OP
 	|MUL_OP
-	|REMAINDER_OP
+	|REMAINDER_OP;
+set_op : 
+	SUBSET_OP
+	|SUPSET_OP;
 logic_op :
 	OR_OP
 	|AND_OP
 	|XOR_OP
-	|EQUAL_OP
+	|EQUALITY_OP
 	|LT_OP
 	|GT_OP
 	|LTE_OP
 	|GTE_OP
-	|NOT_OP
-	|SUBSET_OP
-	|SUPSET_OP
- set_exp : 
-	SET_INIT
+	|NOT_OP;
+ set_expression : 
+	set_init
 	|set_union
 	|set_intersect
 	|set_diff
 	|set_cartesian
-	|set
+	|SET;
 set_union :
-	SET_INIT UNION set_expression
-	| SET UNION set_expression
+	set_init UNION set_expression
+	| SET UNION set_expression;
 set_intersect :
-	SET_INIT INTERSECT set_expression
-	| SET INTERSECT set_expression
+	set_init INTERSECT set_expression
+	| SET INTERSECT set_expression;
 set_diff : 
-	SET_INIT DIFF_OP set_expression
-	|SET DIFF_OP set_expression
+	set_init DIFF_OP set_expression
+	|SET DIFF_OP set_expression;
 set_cartesian : 
-	SET_INIT CART_OP set_expression
-	|SET CART_OP set_expression
+	set_init CART_OP set_expression
+	|SET CART_OP set_expression;
 element_list :
 	set_element
 	|set_element COMMA element_list
-	|EMPTY
+	|EMPTY;
 set_element : 
 	SET
-	|STRING
-	|DOUBLE
-	|INTEGER
-	|CHAR
+	|variable
 	|IDENTIFIER
-	|SET_INIT
-number :
-	DIGIT
-	|DIGIT number
+	|set_init;
 numeral : 
 	INTEGER
-	|DOUBLE
-name :
-	IDENTIFIER
-	|number IDENTIFIER
-sentence : 
-	EMPTY
-	|name
-	|sentence name
+	|DOUBLE;
 set_functions :
 	represent_set
 	|is_empty_set
 	|set_addition
 	|set_deletion
-	|set_contains
-set_contains : 
-	SET CONTAINS IDENTIFIER
-	|SET CONTAINS variable
+	|set_clear;
 set_deletion :
-	SET DELETE expression
-	|SET DELETE SET
-	|SET DELETE element_list
+	SET DELETE variable
+	|SET DELETE IDENTIFIER
+	|SET DELETE SET;	
 set_clear : 
-	SET CLEAR
+	SET CLEAR;
 represent_set : 
-	SET SHOW
+	SET SHOW;
 is_empty_set :
-	SET ISEMPTY
+	SET IS_EMPTY;
 set_addition : 
-	SET ADD expression
-	|SET ADD SET
-	|SET ADD SET_INIT
+	SET ADD variable
 	|SET ADD IDENTIFIER
+	|SET ADD SET;	
+set_init : 
+ 	LCB element_list RCB;
+empty : ;  
 %%
+#include "lex.yy.c"
+
 void yyerror(char *s){
-fprintf(stdout,"line %d: %s\n", yylineno,s);
+	fprintf(stdout,"line %d: %s\n", yylineno,s);
 }
+
 int main(void)
-{
-yyparse();
-if(yynerrs <1)
-{
-	printf("Parsing is successful\n";)
-}
-return 0;
+	{
+	yyparse();
+	return 0;
 }
