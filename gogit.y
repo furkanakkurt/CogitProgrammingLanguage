@@ -1,6 +1,7 @@
 %{
 #include <stdio.h>
 #include <stdlib.h>
+#define YYDEBUG 1
 %}
 %token BOOLEAN
 %token BOOL
@@ -74,7 +75,7 @@
 %token DIFF_OP
 %token CART_OP
 %token NEW_LINE
-
+%token ENDIF
 %start program
 %right ASSIGNMENT_OP
 
@@ -85,10 +86,11 @@ program :
 	BEGINN stmts END {printf("Input program is valid\n"); return 0;} | BEGINN empty END {printf("Input program is valid\n"); return 0;};
 stmts : 
 	stmt
-	|stmt stmts ; 
+	|stmts stmt ; 
 stmt :
 	if_stmt end_stmt 
-	| nonif_stmt end_stmt;
+	| nonif_stmt end_stmt
+	| COMMENT;
 nonif_stmt :
 	loop
 	| function_dec
@@ -98,6 +100,8 @@ nonif_stmt :
 	| input_stmt
 	| output_stmt
 	| var_dec;
+
+//decleration statements.
 var_dec :
 	int_dec
 	| double_dec
@@ -115,11 +119,15 @@ boolean_dec :
 	BOOL IDENTIFIER;
 char_dec :
 	CH IDENTIFIER;
+
+//input-output statements.
 input_stmt :
-	INPUT variable;		
+	INPUT IDENTIFIER;		
 output_stmt :
 	OUTPUT IDENTIFIER
 	|OUTPUT variable;
+
+//loop statements.
 loop : 
 	while_stmt
 	|dowhile_stmt;
@@ -129,33 +137,54 @@ dowhile_stmt :
 	DO LP stmts RP WHILE logical_exp;
 end_stmt :
 	SEMICOLON;
+
+//assignment statements.
 assignment :
 	SET ASSIGNMENT_OP set_expression
 	|IDENTIFIER ASSIGNMENT_OP LP arithmetic_exp RP
 	|IDENTIFIER ASSIGNMENT_OP logical_exp
-	|IDENTIFIER ASSIGNMENT_OP input_stmt
+	|IDENTIFIER ASSIGNMENT_OP STRING
+	|IDENTIFIER ASSIGNMENT_OP BOOLEAN
+	|IDENTIFIER ASSIGNMENT_OP CHAR
 	|assignment arithmetic_op numeral;
+
+//conditional statement.
 if_stmt :
-	matched_if 
-	|unmatched_if;
-matched_if :
-	IF LP logical_exp RP THEN matched_if ELSE matched_if; 
-unmatched_if :
-	IF LP logical_exp RP THEN if_stmt 
-	|IF LP logical_exp RP THEN matched_if ELSE unmatched_if
-	|IF LP logical_exp RP THEN nonif_stmt ELSE unmatched_if;
+	IF LP logical_exp RP THEN stmts ENDIF
+	|IF LP logical_exp RP THEN stmts ELSE THEN stmts ENDIF;
+
+//arithmetic expression with presedence rule.
 arithmetic_exp :
-	arithmetic_exp arithmetic_op numeral 
-	|arithmetic_exp arithmetic_op IDENTIFIER
-	|IDENTIFIER
-	|variable;
+	arithmetic_exp sub_sum_op ar_exp | ar_exp;
+ar_exp : 
+	ar_exp mult_div_op arit_Exp | arit_Exp;
+arit_Exp :
+	LP arithmetic_exp RP | IDENTIFIER | numeral;
+sub_sum_op :
+	PLUS_OP
+	|MINUS_OP;
+mult_div_op :
+	MUL_OP
+	|DIV_OP
+	|REMAINDER_OP;
+arithmetic_op :
+	sub_sum_op
+	|mult_div_op;
+
+//logical expressions of all kind.	
 logical_exp :
 	IDENTIFIER logic_op IDENTIFIER
-	IDENTIFIER set_op SET
-	variable set_op SET	
-	SET set_op SET;
+	|IDENTIFIER set_op SET
+	|variable set_op SET	
+	|SET set_op SET
+	|IDENTIFIER logic_op numeral
+	|numeral logic_op IDENTIFIER
+	|numeral logic_op numeral;
+
+//Function decleration and function call.
 function_dec :	
-    FUNCDEC func_name LP function_parameters RP STARTF stmts RETURN stmt ENDF;
+        FUNCDEC func_name LP function_parameters RP STARTF stmts RETURN IDENTIFIER end_stmt ENDF
+	|FUNCDEC func_name LP function_parameters RP STARTF stmts RETURN variable end_stmt  ENDF;
 function_call :
 	func_name LP function_parameters RP;
 function_parameters :
@@ -164,21 +193,22 @@ function_parameters :
 function_parameter :
 	SET
 	|numeral
+	|CHAR
 	|STRING
-	|EMPTY;
+	|EMPTY
+	|IDENTIFIER;
 func_name :
 	IDENTIFIER;
+
+//variables
 variable :
 	STRING
 	|BOOLEAN
 	|numeral
 	|CHAR;
-arithmetic_op :
-	PLUS_OP
-	|MINUS_OP
-	|DIV_OP
-	|MUL_OP
-	|REMAINDER_OP;
+
+
+//logic operations for set and normal
 set_op : 
 	SUBSET_OP
 	|SUPSET_OP;
@@ -192,6 +222,8 @@ logic_op :
 	|LTE_OP
 	|GTE_OP
 	|NOT_OP;
+
+//expression that are unique to sets.
  set_expression : 
 	set_init
 	|set_union
@@ -223,6 +255,8 @@ set_element :
 numeral : 
 	INTEGER
 	|DOUBLE;
+
+//functionalities that we provide for sets.
 set_functions :
 	represent_set
 	|is_empty_set
@@ -249,12 +283,17 @@ empty : ;
 %%
 #include "lex.yy.c"
 
-void yyerror(char *s){
-	fprintf(stdout,"line %d: %s\n", yylineno,s);
+//printing error
+int yyerror(char* s){
+	fprintf(stderr, "%s on line %d\n",s,yylineno);
+	return 1;
 }
 
 int main(void)
 	{
+	#if YYDEBUG 
+		yydebug=1;
+	#endif
 	yyparse();
 	return 0;
 }

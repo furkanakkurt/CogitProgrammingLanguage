@@ -11,7 +11,7 @@ END end
 DIGIT [0-9]
 UNION [Uu]
 INTERSECT [Nn]
-CART_OP [Cc]
+CART_OP xx
 PLUS_OP \+
 MINUS_OP \-
 MUL_OP \*
@@ -19,7 +19,7 @@ DIV_OP \/
 ASSIGNMENT_OP \=
 REMAINDER_OP \%
 DIFF_OP \\
-NEW_LINE \n
+NEW_LINE \\n
 EQUALITY_OP \=\=
 HASHTAG #
 IF if 
@@ -33,6 +33,7 @@ OUTPUT output
 FUNCDEC funcdec
 STARTF startf
 ENDF endf
+ENDIF endif
 RETURN return
 OR_OP	\|\|
 AND_OP \&\&
@@ -67,7 +68,7 @@ INTEGER ({DIGIT})+
 DOUBLE {DIGIT}*(\.{DIGIT}+)
 IDENTIFIER {LETTER}({LETTER}|{DIGIT})*
 STRING \"([^\\\"]|\\\"|\\\n|\\\\)*\"
-COMMENT {HASHTAG}([^\n])*\n 
+COMMENT \/\*.*\*\/ 
 
 %%
 {ADD} return ADD;
@@ -84,6 +85,7 @@ COMMENT {HASHTAG}([^\n])*\n
 {OUTPUT} return OUTPUT;
 {END} return END;
 {ENDF} return ENDF;
+{ENDIF} return ENDIF;
 {LETTER} return IDENTIFIER;
 {CHAR} return CHAR;
 {DIFF_OP} return DIFF_OP;
@@ -94,13 +96,13 @@ COMMENT {HASHTAG}([^\n])*\n
 {STR} return STR;
 {CH} return CH;
 {BOOL} return BOOL;
+{DBL} return DBL;
 {PLUS_OP} return PLUS_OP;
 {MINUS_OP} return MINUS_OP;
 {MUL_OP} return MUL_OP;
 {DIV_OP} return DIV_OP;
 {REMAINDER_OP} return REMAINDER_OP;
 {ASSIGNMENT_OP} return ASSIGNMENT_OP;
-{NEW_LINE} return NEW_LINE;
 {EQUALITY_OP} return EQUALITY_OP;
 {HASHTAG} return HASHTAG;
 {IF} return IF;
@@ -134,7 +136,8 @@ COMMENT {HASHTAG}([^\n])*\n
 {DOUBLE} return DOUBLE;
 {IDENTIFIER} return IDENTIFIER;
 {COMMENT} return COMMENT;
-. {printf("%s", yytext);}
+{NEW_LINE} ;
+[ \t\n] ;
 
 %%
 int yywrap(void) {
